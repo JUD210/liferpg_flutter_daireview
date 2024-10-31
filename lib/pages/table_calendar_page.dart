@@ -11,8 +11,8 @@ class TableCalendarPage extends StatefulWidget {
 
 class TableCalendarPageState extends State<TableCalendarPage> {
   late final ValueNotifier<List<dynamic>> _selectedEvents;
-  CalendarFormat _calendarFormat = CalendarFormat.month; // final 제거
-  final DateTime _focusedDay = DateTime.now();
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
   @override
@@ -37,6 +37,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
+      _focusedDay = focusedDay; // _focusedDay 업데이트
       _selectedEvents.value = getEventsForDay(selectedDay);
     });
   }
@@ -91,13 +92,13 @@ class TableCalendarPageState extends State<TableCalendarPage> {
             },
             onPageChanged: (focusedDay) {
               setState(() {
-                _focusedDay;
+                _focusedDay = focusedDay; // 월 변경 시 _focusedDay 업데이트
               });
             },
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
                 final events = getEventsForDay(day);
-                final emoji = getEmojiFromEvents(events); // 날짜별 이모지 표시
+                final emoji = getEmojiFromEvents(events);
                 return Center(
                   child: Text(emoji, style: const TextStyle(fontSize: 24)),
                 );
@@ -158,7 +159,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                     },
                   );
                 },
-                child: const Text('자세히 보기'), // 자세히 보기 버튼 추가
+                child: const Text('자세히 보기'),
               ),
             ),
           ),
