@@ -5,11 +5,31 @@ import 'dart:math';
 import 'package:table_calendar/table_calendar.dart';
 
 class Rating {
-  final int score;
+  int score;
+
   Rating(this.score);
 
   @override
   String toString() => 'Rating: $score';
+}
+
+class Note {
+  String description;
+
+  Note(this.description);
+
+  @override
+  String toString() => description;
+}
+
+class Review {
+  late bool isAIGenerated;
+  String description;
+
+  Review(this.description, {this.isAIGenerated = false});
+
+  @override
+  String toString() => description;
 }
 
 // 평점 수정 다이얼로그
@@ -203,15 +223,6 @@ Future<void> showAddMessageEventDialog(BuildContext context, DateTime day,
       ],
     ),
   );
-}
-
-class Note {
-  final String description;
-
-  Note(this.description);
-
-  @override
-  String toString() => description;
 }
 
 final Map<int, String> ratingToEmoji = {
