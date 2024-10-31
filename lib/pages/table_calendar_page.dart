@@ -331,6 +331,18 @@ class TableCalendarPageState extends State<TableCalendarPage> {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/diary');
+                },
+                child: const Text('자세히 보기'),
+              ),
+            ),
+          ),
         ],
       ),
     );

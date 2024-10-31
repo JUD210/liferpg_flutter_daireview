@@ -27,13 +27,13 @@ List<Event> createRandomEvents() {
   ];
 }
 
-final _kEventSource = Map<DateTime, List<Event>>.fromIterable(
-    List<DateTime>.generate(
-        kToday.difference(kFirstDay).inDays + 1, // 오늘까지의 일수만 생성
-        (index) => DateTime.utc(
-            kFirstDay.year, kFirstDay.month, kFirstDay.day + index)),
-    key: (item) => item as DateTime,
-    value: (item) => createRandomEvents());
+final _kEventSource = {
+  for (var item in List<DateTime>.generate(
+      kToday.difference(kFirstDay).inDays + 1, // 오늘까지의 일수만 생성
+      (index) =>
+          DateTime.utc(kFirstDay.year, kFirstDay.month, kFirstDay.day + index)))
+    item: createRandomEvents()
+};
 
 final kEvents = LinkedHashMap<DateTime, List<Event>>(
   equals: isSameDay,
