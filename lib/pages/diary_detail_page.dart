@@ -58,10 +58,13 @@ class DiaryDetailPageState extends State<DiaryDetailPage> {
   @override
   Widget build(BuildContext context) {
     final String date = _date.toLocal().toString().split(' ')[0];
+    final year = int.parse(date.split('-')[0]);
+    final month = int.parse(date.split('-')[1]);
+    final day = int.parse(date.split('-')[2]);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Diary Entry - $date'),
+        title: Text('$year년 $month월 $day일 정보'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
