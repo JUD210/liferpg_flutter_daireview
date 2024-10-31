@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart'; // intl 패키지의 로케일 데이터를 초기화하기 위해 임포트합니다.
+import 'package:intl/date_symbol_data_local.dart';
 
-import 'splash_screen.dart'; // SplashScreen 파일을 임포트합니다.
-import 'home_screen.dart'; // 홈 화면 파일을 임포트합니다.
-import 'table_calendar.dart'; // 이벤트 예제 파일을 임포트합니다.
+import 'pages/splash_screen.dart';
+import 'pages/table_calendar_screen.dart';
 
 void main() {
   // 로케일 데이터를 초기화합니다. 이 작업이 완료된 후에 runApp을 호출합니다.

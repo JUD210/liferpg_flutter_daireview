@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'fade_in_animation.dart'; // 애니메이션 파일을 임포트합니다.
+import '../widgets/fade_in_animation.dart';
 
 class SplashScreen extends StatelessWidget {
   final String title;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'utils.dart'; // utils.dart 파일에서 필요한 변수와 함수를 임포트합니다.
+import '../utils/utils.dart';
 
 final Map<int, String> ratingToEmoji = {
   1: '😭',
