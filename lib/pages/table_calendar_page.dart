@@ -10,14 +10,16 @@ final Map<int, String> ratingToEmoji = {
   5: '😊',
 };
 
-class TableEventsExample extends StatefulWidget {
+class TableCalendarPage extends StatefulWidget {
+  const TableCalendarPage({super.key});
+
   @override
-  _TableEventsExampleState createState() => _TableEventsExampleState();
+  TableCalendarPageState createState() => TableCalendarPageState();
 }
 
-class _TableEventsExampleState extends State<TableEventsExample> {
+class TableCalendarPageState extends State<TableCalendarPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
@@ -57,7 +59,7 @@ class _TableEventsExampleState extends State<TableEventsExample> {
       builder: (context) => StatefulBuilder(
         builder: (BuildContext context, StateSetter setDialogState) {
           return AlertDialog(
-            title: Text("오늘의 평점을 매겨주세요!"),
+            title: const Text("오늘의 평점을 매겨주세요!"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -76,10 +78,10 @@ class _TableEventsExampleState extends State<TableEventsExample> {
             ),
             actions: <Widget>[
               TextButton(
-                  child: Text("취소"),
+                  child: const Text("취소"),
                   onPressed: () => Navigator.of(context).pop()),
               TextButton(
-                child: Text("삭제"),
+                child: const Text("삭제"),
                 onPressed: () {
                   setState(() {
                     List<Event> updatedEvents =
@@ -92,7 +94,7 @@ class _TableEventsExampleState extends State<TableEventsExample> {
                 },
               ),
               TextButton(
-                  child: Text("저장"),
+                  child: const Text("저장"),
                   onPressed: () {
                     setState(() {
                       List<Event> updatedEvents =
@@ -112,41 +114,40 @@ class _TableEventsExampleState extends State<TableEventsExample> {
   }
 
   void showAddRatingEventDialog(DateTime day) {
-    double _rating = 3; // 기본 평점 값
+    double rating = 3; // 기본 평점 값
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text("오늘의 평점을 매겨주세요!"),
+            title: const Text("오늘의 평점을 매겨주세요!"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                    "${ratingToEmoji[_rating.toInt()]} ${_rating.toInt()} / 5"),
+                Text("${ratingToEmoji[rating.toInt()]} ${rating.toInt()} / 5"),
                 Slider(
                   min: 1,
                   max: 5,
                   divisions: 4,
-                  value: _rating,
+                  value: rating,
                   onChanged: (double value) {
-                    setState(() => _rating = value);
+                    setState(() => rating = value);
                   },
                 ),
               ],
             ),
             actions: <Widget>[
               TextButton(
-                  child: Text("취소"),
+                  child: const Text("취소"),
                   onPressed: () => Navigator.of(context).pop()),
               TextButton(
-                  child: Text("저장"),
+                  child: const Text("저장"),
                   onPressed: () {
                     setState(() {
                       List<Event> newEvents = List.from(kEvents[day] ?? []);
-                      newEvents.add(Event('오늘의 평점: ${_rating.toInt()}/5',
-                          isRating: true));
+                      newEvents.add(
+                          Event('오늘의 평점: ${rating.toInt()}/5', isRating: true));
                       kEvents[day] = newEvents;
                       _selectedEvents.value = newEvents;
                     });
@@ -160,24 +161,23 @@ class _TableEventsExampleState extends State<TableEventsExample> {
   }
 
   void showEditEventDialog(Event event, DateTime day, int index) {
-    TextEditingController _controller =
-        TextEditingController(text: event.title);
+    TextEditingController controller = TextEditingController(text: event.title);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("기록 수정하기"),
+        title: const Text("기록 수정하기"),
         content: TextField(
-          controller: _controller,
-          decoration: InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
+          controller: controller,
+          decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
         ),
         actions: <Widget>[
           TextButton(
-            child: Text("취소"),
+            child: const Text("취소"),
             onPressed: () => Navigator.of(context).pop(),
           ),
           TextButton(
-            child: Text("삭제"),
+            child: const Text("삭제"),
             onPressed: () {
               setState(() {
                 List<Event> updatedEvents = List.from(_getEventsForDay(day));
@@ -189,13 +189,13 @@ class _TableEventsExampleState extends State<TableEventsExample> {
             },
           ),
           TextButton(
-            child: Text("저장"),
+            child: const Text("저장"),
             onPressed: () {
-              if (_controller.text.isNotEmpty) {
+              if (controller.text.isNotEmpty) {
                 setState(() {
                   List<Event> updatedEvents = List.from(_getEventsForDay(day));
                   updatedEvents[index] =
-                      Event(_controller.text, isRating: event.isRating);
+                      Event(controller.text, isRating: event.isRating);
                   kEvents[day] = updatedEvents;
                   _selectedEvents.value = updatedEvents;
                 });
@@ -209,26 +209,27 @@ class _TableEventsExampleState extends State<TableEventsExample> {
   }
 
   void showAddMessageEventDialog(DateTime day) {
-    TextEditingController _controller = TextEditingController();
+    TextEditingController controller = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("기록 추가하기"),
+        title: const Text("기록 추가하기"),
         content: TextField(
-          controller: _controller,
-          decoration: InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
+          controller: controller,
+          decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
         ),
         actions: <Widget>[
           TextButton(
-              child: Text("취소"), onPressed: () => Navigator.of(context).pop()),
+              child: const Text("취소"),
+              onPressed: () => Navigator.of(context).pop()),
           TextButton(
-              child: Text("저장"),
+              child: const Text("저장"),
               onPressed: () {
-                if (_controller.text.isNotEmpty) {
+                if (controller.text.isNotEmpty) {
                   setState(() {
                     List<Event> newEvents = List.from(kEvents[day] ?? []);
-                    newEvents.add(Event(_controller.text, isRating: false));
+                    newEvents.add(Event(controller.text, isRating: false));
                     kEvents[day] = newEvents;
                     _selectedEvents.value = newEvents;
                   });
@@ -269,10 +270,10 @@ class _TableEventsExampleState extends State<TableEventsExample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('[오늘하루] 캘린더뷰'),
+        title: const Text('[오늘하루] 캘린더뷰'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
               DateTime selectedDate = _selectedDay ?? _focusedDay;
               var events = _getEventsForDay(selectedDate);
@@ -303,7 +304,7 @@ class _TableEventsExampleState extends State<TableEventsExample> {
                 final events = _getEventsForDay(day);
                 final emoji = getEmojiFromEvents(events);
                 return Center(
-                    child: Text(emoji, style: TextStyle(fontSize: 24)));
+                    child: Text(emoji, style: const TextStyle(fontSize: 24)));
               },
             ),
           ),
@@ -318,8 +319,8 @@ class _TableEventsExampleState extends State<TableEventsExample> {
                     final event = value[index];
                     return ListTile(
                       leading: event.isRating
-                          ? Icon(Icons.star)
-                          : Icon(Icons.message),
+                          ? const Icon(Icons.star)
+                          : const Icon(Icons.message),
                       title: Text(event.title),
                       onTap: () => event.isRating
                           ? showEditRatingDialog(event, _selectedDay!, index)
