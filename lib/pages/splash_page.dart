@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/fade_in_animation.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashPage extends StatelessWidget {
   final String title;
 
-  const SplashScreen({super.key, required this.title});
+  const SplashPage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

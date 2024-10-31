@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../utils/utils.dart';
-
-final Map<int, String> ratingToEmoji = {
-  1: '😭',
-  2: '😟',
-  3: '😐',
-  4: '🙂',
-  5: '😊',
-};
+import '../utils/utils.dart'; // utils.dart에서 함수와 kEvents 가져오기
 
 class TableCalendarPage extends StatefulWidget {
   const TableCalendarPage({super.key});
@@ -18,7 +10,7 @@ class TableCalendarPage extends StatefulWidget {
 }
 
 class TableCalendarPageState extends State<TableCalendarPage> {
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  late final ValueNotifier<List<dynamic>> _selectedEvents;
   final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -27,7 +19,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _selectedEvents = ValueNotifier(getEventsForDay(_selectedDay!));
   }
 
   @override
@@ -36,23 +28,8 @@ class TableCalendarPageState extends State<TableCalendarPage> {
     super.dispose();
   }
 
-  List<Event> _getEventsForDay(DateTime day) {
-    return kEvents[day] ?? [];
-  }
-
-  String getEmojiFromEvents(List<Event> events) {
-    for (Event event in events) {
-      if (event.title.startsWith('오늘의 평점')) {
-        int rating = int.parse(event.title.split(' ')[2][0]);
-        return ratingToEmoji[rating] ?? '❓';
-      }
-    }
-    return '❓'; // 평점이 없는 경우 기본 이모티콘
-  }
-
-  void showEditRatingDialog(Event event, DateTime day, int index) {
-    double rating =
-        double.tryParse(event.title.split(' ')[2].split('/')[0]) ?? 3.0;
+  void showEditRatingDialog(Rating ratingEvent, DateTime day, int index) {
+    double rating = ratingEvent.score.toDouble();
 
     showDialog(
       context: context,
@@ -70,8 +47,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                   divisions: 4,
                   value: rating,
                   onChanged: (double value) {
-                    setDialogState(
-                        () => rating = value); // 슬라이더 값을 조정할 때마다 로컬 상태 업데이트
+                    setDialogState(() => rating = value);
                   },
                 ),
               ],
@@ -84,8 +60,8 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                 child: const Text("삭제"),
                 onPressed: () {
                   setState(() {
-                    List<Event> updatedEvents =
-                        List.from(_getEventsForDay(day));
+                    List<dynamic> updatedEvents =
+                        List.from(getEventsForDay(day));
                     updatedEvents.removeAt(index);
                     kEvents[day] = updatedEvents;
                     _selectedEvents.value = updatedEvents;
@@ -97,10 +73,9 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                   child: const Text("저장"),
                   onPressed: () {
                     setState(() {
-                      List<Event> updatedEvents =
-                          List.from(_getEventsForDay(day));
-                      updatedEvents[index] =
-                          Event('오늘의 평점: ${rating.toInt()}/5', isRating: true);
+                      List<dynamic> updatedEvents =
+                          List.from(getEventsForDay(day));
+                      updatedEvents[index] = Rating(rating.toInt());
                       kEvents[day] = updatedEvents;
                       _selectedEvents.value = updatedEvents;
                     });
@@ -114,7 +89,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
   }
 
   void showAddRatingEventDialog(DateTime day) {
-    double rating = 3; // 기본 평점 값
+    double rating = 3;
 
     showDialog(
       context: context,
@@ -145,9 +120,8 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                   child: const Text("저장"),
                   onPressed: () {
                     setState(() {
-                      List<Event> newEvents = List.from(kEvents[day] ?? []);
-                      newEvents.add(
-                          Event('오늘의 평점: ${rating.toInt()}/5', isRating: true));
+                      List<dynamic> newEvents = List.from(kEvents[day] ?? []);
+                      newEvents.add(Rating(rating.toInt()));
                       kEvents[day] = newEvents;
                       _selectedEvents.value = newEvents;
                     });
@@ -160,8 +134,10 @@ class TableCalendarPageState extends State<TableCalendarPage> {
     );
   }
 
-  void showEditEventDialog(Event event, DateTime day, int index) {
-    TextEditingController controller = TextEditingController(text: event.title);
+  void showEditEventDialog(Note noteEvent, DateTime day, int index) {
+    // Note의 description을 사용하여 초기화
+    TextEditingController controller =
+        TextEditingController(text: noteEvent.description);
 
     showDialog(
       context: context,
@@ -180,7 +156,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
             child: const Text("삭제"),
             onPressed: () {
               setState(() {
-                List<Event> updatedEvents = List.from(_getEventsForDay(day));
+                List<dynamic> updatedEvents = List.from(getEventsForDay(day));
                 updatedEvents.removeAt(index);
                 kEvents[day] = updatedEvents;
                 _selectedEvents.value = updatedEvents;
@@ -193,9 +169,9 @@ class TableCalendarPageState extends State<TableCalendarPage> {
             onPressed: () {
               if (controller.text.isNotEmpty) {
                 setState(() {
-                  List<Event> updatedEvents = List.from(_getEventsForDay(day));
+                  List<dynamic> updatedEvents = List.from(getEventsForDay(day));
                   updatedEvents[index] =
-                      Event(controller.text, isRating: event.isRating);
+                      Note(controller.text); // description만 사용
                   kEvents[day] = updatedEvents;
                   _selectedEvents.value = updatedEvents;
                 });
@@ -228,8 +204,8 @@ class TableCalendarPageState extends State<TableCalendarPage> {
               onPressed: () {
                 if (controller.text.isNotEmpty) {
                   setState(() {
-                    List<Event> newEvents = List.from(kEvents[day] ?? []);
-                    newEvents.add(Event(controller.text, isRating: false));
+                    List<dynamic> newEvents = List.from(kEvents[day] ?? []);
+                    newEvents.add(Note(controller.text));
                     kEvents[day] = newEvents;
                     _selectedEvents.value = newEvents;
                   });
@@ -241,28 +217,14 @@ class TableCalendarPageState extends State<TableCalendarPage> {
     );
   }
 
-  void updateEvents(DateTime day, List<Event> updatedEvents) {
-    // 이벤트를 평점 이벤트가 앞에 오도록 정렬
-    updatedEvents.sort((a, b) {
-      if (a.isRating && !b.isRating) return -1;
-      if (!a.isRating && b.isRating) return 1;
-      return 0;
-    });
-    setState(() {
-      kEvents[day] = updatedEvents;
-      _selectedEvents.value = updatedEvents;
-    });
-  }
-
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
-      _selectedEvents.value = _getEventsForDay(selectedDay);
+      _selectedEvents.value = getEventsForDay(selectedDay);
     });
-    if (_getEventsForDay(selectedDay).isEmpty) {
-      showAddRatingEventDialog(
-          selectedDay); // Only show rating dialog if no events exist
+    if (getEventsForDay(selectedDay).isEmpty) {
+      showAddRatingEventDialog(selectedDay);
     }
   }
 
@@ -276,8 +238,8 @@ class TableCalendarPageState extends State<TableCalendarPage> {
             icon: const Icon(Icons.add),
             onPressed: () {
               DateTime selectedDate = _selectedDay ?? _focusedDay;
-              var events = _getEventsForDay(selectedDate);
-              bool hasRatingEvent = events.any((e) => e.isRating);
+              var events = getEventsForDay(selectedDate);
+              bool hasRatingEvent = events.any((e) => e is Rating);
 
               if (!hasRatingEvent) {
                 showAddRatingEventDialog(selectedDate);
@@ -290,18 +252,18 @@ class TableCalendarPageState extends State<TableCalendarPage> {
       ),
       body: Column(
         children: [
-          TableCalendar<Event>(
+          TableCalendar<dynamic>(
             locale: 'ko_KR',
             firstDay: kFirstDay,
             lastDay: kLastDay,
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
-            eventLoader: _getEventsForDay,
+            eventLoader: getEventsForDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
-                final events = _getEventsForDay(day);
+                final events = getEventsForDay(day);
                 final emoji = getEmojiFromEvents(events);
                 return Center(
                     child: Text(emoji, style: const TextStyle(fontSize: 24)));
@@ -310,7 +272,7 @@ class TableCalendarPageState extends State<TableCalendarPage> {
           ),
           const SizedBox(height: 8.0),
           Expanded(
-            child: ValueListenableBuilder<List<Event>>(
+            child: ValueListenableBuilder<List<dynamic>>(
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 return ListView.builder(
@@ -318,11 +280,11 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                   itemBuilder: (context, index) {
                     final event = value[index];
                     return ListTile(
-                      leading: event.isRating
+                      leading: event is Rating
                           ? const Icon(Icons.star)
                           : const Icon(Icons.message),
-                      title: Text(event.title),
-                      onTap: () => event.isRating
+                      title: Text(event.toString()),
+                      onTap: () => event is Rating
                           ? showEditRatingDialog(event, _selectedDay!, index)
                           : showEditEventDialog(event, _selectedDay!, index),
                     );
@@ -337,7 +299,16 @@ class TableCalendarPageState extends State<TableCalendarPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/diary');
+                  DateTime selectedDate = _selectedDay ?? _focusedDay;
+                  List<dynamic> selectedEvents = getEventsForDay(selectedDate);
+
+                  Navigator.of(context).pushNamed(
+                    '/diary',
+                    arguments: {
+                      'selectedDate': selectedDate,
+                      'events': selectedEvents,
+                    },
+                  );
                 },
                 child: const Text('자세히 보기'),
               ),

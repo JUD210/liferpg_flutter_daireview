@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/utils.dart';
 
 class DiaryDetailPage extends StatefulWidget {
   const DiaryDetailPage({super.key});
@@ -13,6 +14,28 @@ class DiaryDetailPageState extends State<DiaryDetailPage> {
   final List<String> _notes = []; // List to store notes
 
   @override
+  void initState() {
+    super.initState();
+    // arguments로 전달된 데이터를 초기화
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final Map<String, dynamic> args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      DateTime selectedDate = args['selectedDate'];
+      List<dynamic> events = args['events'];
+
+      // 초기 값을 설정
+      setState(() {
+        _notes.addAll(events
+            .where((event) => event is! Rating) // Note 타입의 이벤트만 추가
+            .map((event) => event.toString()));
+        var ratingEvent =
+            events.firstWhere((event) => event is Rating, orElse: () => null);
+        _rating = ratingEvent?.score?.toDouble() ?? 3.0;
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _diaryController.dispose();
     super.dispose();
@@ -20,12 +43,11 @@ class DiaryDetailPageState extends State<DiaryDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final String date =
-        DateTime.now().toLocal().toString().split(' ')[0]; // Get current date
+    final String date = DateTime.now().toLocal().toString().split(' ')[0];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Diary Entry - $date'), // Show the date in the title
+        title: Text('Diary Entry - $date'),
         actions: [
           IconButton(
             icon: const Icon(Icons.star),
@@ -48,7 +70,7 @@ class DiaryDetailPageState extends State<DiaryDetailPage> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  _getEmojiForRating(_rating), // Display emoji
+                  getEmojiForRating(_rating), // Display emoji
                   style: const TextStyle(fontSize: 24),
                 ),
               ],
@@ -85,49 +107,12 @@ class DiaryDetailPageState extends State<DiaryDetailPage> {
     );
   }
 
-  String _getEmojiForRating(double rating) {
-    final Map<int, String> ratingToEmoji = {
-      1: '😭',
-      2: '😟',
-      3: '😐',
-      4: '🙂',
-      5: '😊',
-    };
-    return ratingToEmoji[rating.toInt()] ?? '❓';
-  }
-
-  void _addNote() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('노트 추가하기'),
-          content: TextField(
-            controller: _diaryController,
-            decoration: const InputDecoration(hintText: '노트를 입력하세요'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (_diaryController.text.isNotEmpty) {
-                  setState(() {
-                    _notes.add(_diaryController.text);
-                    _diaryController.clear();
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('저장'),
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _addNote() async {
+    final note = await addNoteDialog(context, _diaryController);
+    if (note != null) {
+      setState(() {
+        _notes.add(note); // 입력된 텍스트를 _notes에 추가
+      });
+    }
   }
 }

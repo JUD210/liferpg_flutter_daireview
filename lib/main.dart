@@ -24,8 +24,7 @@ class DaiReviewApp extends StatelessWidget {
       ),
       initialRoute: '/intro',
       routes: {
-        '/intro': (context) =>
-            const SplashScreen(title: 'Welcome to DaiReview'),
+        '/intro': (context) => const SplashPage(title: 'Welcome to DaiReview'),
         '/home': (context) => const TableCalendarPage(),
         '/diary': (context) => const DiaryDetailPage(), // Add the new route
       },
