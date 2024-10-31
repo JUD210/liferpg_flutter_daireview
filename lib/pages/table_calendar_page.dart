@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../utils/utils.dart'; // utils.dart에서 함수와 kEvents 가져오기
+import '../utils/utils.dart';
 
 class TableCalendarPage extends StatefulWidget {
   const TableCalendarPage({super.key});
@@ -11,8 +11,8 @@ class TableCalendarPage extends StatefulWidget {
 
 class TableCalendarPageState extends State<TableCalendarPage> {
   late final ValueNotifier<List<dynamic>> _selectedEvents;
-  final CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
+  CalendarFormat _calendarFormat = CalendarFormat.month; // final 제거
+  final DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
   @override
@@ -28,204 +28,17 @@ class TableCalendarPageState extends State<TableCalendarPage> {
     super.dispose();
   }
 
-  void showEditRatingDialog(Rating ratingEvent, DateTime day, int index) {
-    double rating = ratingEvent.score.toDouble();
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (BuildContext context, StateSetter setDialogState) {
-          return AlertDialog(
-            title: const Text("오늘의 평점을 매겨주세요!"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("${ratingToEmoji[rating.toInt()]} ${rating.toInt()} / 5"),
-                Slider(
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  value: rating,
-                  onChanged: (double value) {
-                    setDialogState(() => rating = value);
-                  },
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                  child: const Text("취소"),
-                  onPressed: () => Navigator.of(context).pop()),
-              TextButton(
-                child: const Text("삭제"),
-                onPressed: () {
-                  setState(() {
-                    List<dynamic> updatedEvents =
-                        List.from(getEventsForDay(day));
-                    updatedEvents.removeAt(index);
-                    kEvents[day] = updatedEvents;
-                    _selectedEvents.value = updatedEvents;
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                  child: const Text("저장"),
-                  onPressed: () {
-                    setState(() {
-                      List<dynamic> updatedEvents =
-                          List.from(getEventsForDay(day));
-                      updatedEvents[index] = Rating(rating.toInt());
-                      kEvents[day] = updatedEvents;
-                      _selectedEvents.value = updatedEvents;
-                    });
-                    Navigator.of(context).pop();
-                  }),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void showAddRatingEventDialog(DateTime day) {
-    double rating = 3;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text("오늘의 평점을 매겨주세요!"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("${ratingToEmoji[rating.toInt()]} ${rating.toInt()} / 5"),
-                Slider(
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  value: rating,
-                  onChanged: (double value) {
-                    setState(() => rating = value);
-                  },
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                  child: const Text("취소"),
-                  onPressed: () => Navigator.of(context).pop()),
-              TextButton(
-                  child: const Text("저장"),
-                  onPressed: () {
-                    setState(() {
-                      List<dynamic> newEvents = List.from(kEvents[day] ?? []);
-                      newEvents.add(Rating(rating.toInt()));
-                      kEvents[day] = newEvents;
-                      _selectedEvents.value = newEvents;
-                    });
-                    Navigator.of(context).pop();
-                  }),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void showEditEventDialog(Note noteEvent, DateTime day, int index) {
-    // Note의 description을 사용하여 초기화
-    TextEditingController controller =
-        TextEditingController(text: noteEvent.description);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("기록 수정하기"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("취소"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text("삭제"),
-            onPressed: () {
-              setState(() {
-                List<dynamic> updatedEvents = List.from(getEventsForDay(day));
-                updatedEvents.removeAt(index);
-                kEvents[day] = updatedEvents;
-                _selectedEvents.value = updatedEvents;
-              });
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text("저장"),
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                setState(() {
-                  List<dynamic> updatedEvents = List.from(getEventsForDay(day));
-                  updatedEvents[index] =
-                      Note(controller.text); // description만 사용
-                  kEvents[day] = updatedEvents;
-                  _selectedEvents.value = updatedEvents;
-                });
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void showAddMessageEventDialog(DateTime day) {
-    TextEditingController controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("기록 추가하기"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
-        ),
-        actions: <Widget>[
-          TextButton(
-              child: const Text("취소"),
-              onPressed: () => Navigator.of(context).pop()),
-          TextButton(
-              child: const Text("저장"),
-              onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  setState(() {
-                    List<dynamic> newEvents = List.from(kEvents[day] ?? []);
-                    newEvents.add(Note(controller.text));
-                    kEvents[day] = newEvents;
-                    _selectedEvents.value = newEvents;
-                  });
-                  Navigator.of(context).pop();
-                }
-              }),
-        ],
-      ),
-    );
+  void updateEvents(DateTime day, List<dynamic> events) {
+    setState(() {
+      kEvents[day] = events;
+    });
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
       _selectedEvents.value = getEventsForDay(selectedDay);
     });
-    if (getEventsForDay(selectedDay).isEmpty) {
-      showAddRatingEventDialog(selectedDay);
-    }
   }
 
   @override
@@ -242,9 +55,19 @@ class TableCalendarPageState extends State<TableCalendarPage> {
               bool hasRatingEvent = events.any((e) => e is Rating);
 
               if (!hasRatingEvent) {
-                showAddRatingEventDialog(selectedDate);
+                showAddRatingEventDialog(
+                  context,
+                  selectedDate,
+                  selectedEvents: _selectedEvents,
+                  updateEvents: updateEvents,
+                );
               } else {
-                showAddMessageEventDialog(selectedDate);
+                showAddMessageEventDialog(
+                  context,
+                  selectedDate,
+                  selectedEvents: _selectedEvents,
+                  updateEvents: updateEvents,
+                );
               }
             },
           ),
@@ -254,19 +77,30 @@ class TableCalendarPageState extends State<TableCalendarPage> {
         children: [
           TableCalendar<dynamic>(
             locale: 'ko_KR',
-            firstDay: kFirstDay,
-            lastDay: kLastDay,
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             eventLoader: getEventsForDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
+            onFormatChanged: (format) {
+              setState(() {
+                _calendarFormat = format;
+              });
+            },
+            onPageChanged: (focusedDay) {
+              setState(() {
+                _focusedDay;
+              });
+            },
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
                 final events = getEventsForDay(day);
-                final emoji = getEmojiFromEvents(events);
+                final emoji = getEmojiFromEvents(events); // 날짜별 이모지 표시
                 return Center(
-                    child: Text(emoji, style: const TextStyle(fontSize: 24)));
+                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                );
               },
             ),
           ),
@@ -285,8 +119,22 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                           : const Icon(Icons.message),
                       title: Text(event.toString()),
                       onTap: () => event is Rating
-                          ? showEditRatingDialog(event, _selectedDay!, index)
-                          : showEditEventDialog(event, _selectedDay!, index),
+                          ? showEditRatingDialog(
+                              context,
+                              event,
+                              _selectedDay!,
+                              index,
+                              selectedEvents: _selectedEvents,
+                              updateEvents: updateEvents,
+                            )
+                          : showEditEventDialog(
+                              context,
+                              event,
+                              _selectedDay!,
+                              index,
+                              selectedEvents: _selectedEvents,
+                              updateEvents: updateEvents,
+                            ),
                     );
                   },
                 );
@@ -305,12 +153,12 @@ class TableCalendarPageState extends State<TableCalendarPage> {
                   Navigator.of(context).pushNamed(
                     '/diary',
                     arguments: {
-                      'selectedDate': selectedDate,
+                      'date': selectedDate,
                       'events': selectedEvents,
                     },
                   );
                 },
-                child: const Text('자세히 보기'),
+                child: const Text('자세히 보기'), // 자세히 보기 버튼 추가
               ),
             ),
           ),

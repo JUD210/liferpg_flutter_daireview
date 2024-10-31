@@ -12,6 +12,199 @@ class Rating {
   String toString() => 'Rating: $score';
 }
 
+// 평점 수정 다이얼로그
+Future<void> showEditRatingDialog(
+    BuildContext context, Rating ratingEvent, DateTime day, int index,
+    {required ValueNotifier<List<dynamic>> selectedEvents,
+    required Function(DateTime, List<dynamic>) updateEvents}) async {
+  double rating = ratingEvent.score.toDouble();
+
+  return showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) {
+        return AlertDialog(
+          title: const Text("오늘의 평점을 매겨주세요!"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("${ratingToEmoji[rating.toInt()]} ${rating.toInt()} / 5"),
+              Slider(
+                min: 1,
+                max: 5,
+                divisions: 4,
+                value: rating,
+                onChanged: (value) {
+                  setDialogState(() => rating = value);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text("취소"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("삭제"),
+              onPressed: () {
+                List<dynamic> updatedEvents = List.from(getEventsForDay(day));
+                updatedEvents.removeAt(index);
+                updateEvents(day, updatedEvents);
+                selectedEvents.value = updatedEvents;
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("저장"),
+              onPressed: () {
+                List<dynamic> updatedEvents = List.from(getEventsForDay(day));
+                updatedEvents[index] = Rating(rating.toInt());
+                updateEvents(day, updatedEvents);
+                selectedEvents.value = updatedEvents;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+// 평점 추가 다이얼로그
+Future<void> showAddRatingEventDialog(BuildContext context, DateTime day,
+    {required ValueNotifier<List<dynamic>> selectedEvents,
+    required Function(DateTime, List<dynamic>) updateEvents}) async {
+  double rating = 3;
+
+  return showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) {
+        return AlertDialog(
+          title: const Text("오늘의 평점을 매겨주세요!"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("${ratingToEmoji[rating.toInt()]} ${rating.toInt()} / 5"),
+              Slider(
+                min: 1,
+                max: 5,
+                divisions: 4,
+                value: rating,
+                onChanged: (value) {
+                  setDialogState(() => rating = value);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text("취소"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("저장"),
+              onPressed: () {
+                List<dynamic> newEvents = List.from(getEventsForDay(day));
+                newEvents.add(Rating(rating.toInt()));
+                updateEvents(day, newEvents);
+                selectedEvents.value = newEvents;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+// 메모 수정 다이얼로그
+Future<void> showEditEventDialog(
+    BuildContext context, Note noteEvent, DateTime day, int index,
+    {required ValueNotifier<List<dynamic>> selectedEvents,
+    required Function(DateTime, List<dynamic>) updateEvents}) async {
+  TextEditingController controller =
+      TextEditingController(text: noteEvent.description);
+
+  return showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("기록 수정하기"),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
+      ),
+      actions: [
+        TextButton(
+          child: const Text("취소"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: const Text("삭제"),
+          onPressed: () {
+            List<dynamic> updatedEvents = List.from(getEventsForDay(day));
+            updatedEvents.removeAt(index);
+            updateEvents(day, updatedEvents);
+            selectedEvents.value = updatedEvents;
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text("저장"),
+          onPressed: () {
+            if (controller.text.isNotEmpty) {
+              List<dynamic> updatedEvents = List.from(getEventsForDay(day));
+              updatedEvents[index] = Note(controller.text);
+              updateEvents(day, updatedEvents);
+              selectedEvents.value = updatedEvents;
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+// 메모 추가 다이얼로그
+Future<void> showAddMessageEventDialog(BuildContext context, DateTime day,
+    {required ValueNotifier<List<dynamic>> selectedEvents,
+    required Function(DateTime, List<dynamic>) updateEvents}) async {
+  TextEditingController controller = TextEditingController();
+
+  return showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("기록 추가하기"),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(hintText: "오늘 하루는 어떠셨나요?"),
+      ),
+      actions: [
+        TextButton(
+          child: const Text("취소"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: const Text("저장"),
+          onPressed: () {
+            if (controller.text.isNotEmpty) {
+              List<dynamic> newEvents = List.from(getEventsForDay(day));
+              newEvents.add(Note(controller.text));
+              updateEvents(day, newEvents);
+              selectedEvents.value = newEvents;
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 class Note {
   final String description;
 
