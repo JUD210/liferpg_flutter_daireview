@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FadeInAnimation extends StatefulWidget {
-  final VoidCallback onAnimationComplete; // 애니메이션 완료 시 호출할 콜백 함수입니다.
+  final VoidCallback onAnimationComplete;
 
   const FadeInAnimation({super.key, required this.onAnimationComplete});
 
@@ -9,34 +9,53 @@ class FadeInAnimation extends StatefulWidget {
   State<FadeInAnimation> createState() => _FadeInAnimationState();
 }
 
-class _FadeInAnimationState extends State<FadeInAnimation> {
-  double _opacity = 0.0; // 애니메이션의 초기 투명도입니다.
+class _FadeInAnimationState extends State<FadeInAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _startAnimation(); // 애니메이션을 시작합니다.
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+
+    _animation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _controller.forward().whenComplete(widget.onAnimationComplete);
   }
 
-  void _startAnimation() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _opacity = 1.0; // 투명도를 변경하여 페이드 인 효과를 줍니다.
-      });
-    });
-
-    Future.delayed(const Duration(seconds: 3),
-        widget.onAnimationComplete); // 3초 후에 콜백을 호출합니다.
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity, // 현재 투명도를 설정합니다.
-      duration: const Duration(seconds: 2), // 애니메이션 지속 시간을 설정합니다.
-      child: const Text(
-        'Welcome to DaiReview', // 화면에 표시할 텍스트입니다.
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: child,
+        );
+      },
+      child: const Center(
+        child: Image(
+          // FIXME: shiny_magikarp.png 이미지를 life_rpg.png 로고로 변경.
+          image: AssetImage(
+              'assets/images/logos/shiny_magikarp.png'), // 이미지 경로를 설정하세요.
+          width: 200, // 이미지의 초기 크기를 설정합니다.
+          height: 200,
+        ),
       ),
     );
   }
